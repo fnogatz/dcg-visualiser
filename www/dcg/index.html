@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+
+	<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+	<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+	<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+	<link rel="manifest" href="/manifest.json">
+	<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#3e585d">
+	<meta name="theme-color" content="#ffffff">
+
+	<link href="https://fonts.googleapis.com/css?family=Roboto+Mono|Roboto:300,400,400i,500,700" rel="stylesheet">
+
+	<link href="mui/custom.css" rel="stylesheet" type="text/css" />
+	<script src="mui/mui.min.js"></script>
+	<script src="jquery/jquery-3.2.1.js"></script>
+	<script src="/pengine/pengines.js"></script>
+	<script src="handlebars/handlebars-v4.0.11.js"></script>
+	
+	<script src="codemirror/lib/codemirror.js"></script>
+	<script src="codemirror/addon/display/placeholder.js"></script>
+	<script src="codemirror/addon/scroll/simplescrollbars.js"></script>
+	<link rel="stylesheet" href="codemirror/lib/codemirror.css">
+	<link rel="stylesheet" href="codemirror//addon/scroll/simplescrollbars.css">
+
+	<script src="app.js"></script>
+	<script src="examples.js"></script>
+	<link rel="stylesheet" type="text/css" href="style.css" />
+	<link rel="stylesheet" type="text/css" href="slider.css" />
+
+	<title>DCG Visualiser</title>
+</head>
+<body>
+<!--Sidebar-->
+	<div id="controls" class="mui--z3">
+		<div id="controls-brand" class="mui--appbar-line-height">
+			<span class="mui--text-title">DCG Visualiser</span>
+		</div>
+		<div class="mui-divider"></div>
+		<ul>
+			<li>
+				<strong>DCG
+				<div class="mui-dropdown" id="example">
+					<button class="mui-btn mui-btn--flat mui-btn--small" data-mui-toggle="dropdown" title="Example DCGs">
+						Load Example
+						<span class="mui-caret"></span>
+					</button>
+					<ul class="mui-dropdown__menu mui-dropdown__menu--right" id="example-list"></ul>
+				</div>
+				</strong>
+				<div class="mui-container-fluid">
+					<div id="src" />
+				</div>
+			</li>
+			<li>
+				<strong>Phrase</strong>
+				<div>
+				<form class="mui-form--inline form" id="query">
+				<div class="mui-textfield mui-textfield--float-label">
+					<input type="text" id="dcgrule" value="" required />
+					<label>DCGBody</label>
+				</div><div class="mui-textfield mui-textfield--float-label">
+					<input type="text" id="list_in" value="" required />
+					<label>Input</label>
+				</div><div class="mui-textfield mui-textfield--float-label">
+					<input type="text" id="list_out" value="" required />
+					<label>Rest</label>
+				</div><div class="mui-textfield" id="nextSols">
+					<button type="submit" id="run" class="mui-btn mui-btn--raised mui-btn--primary" title="Execute the query">First Solution</button> 
+					<button type="submit" id="next" class="mui-btn mui-btn--raised mui-btn--primary" title="Search for further results" disabled="disabled">Next Solution</button> 
+				</div>
+				</form>
+				</div>
+			</li>
+			<li>
+				<strong>Controls</strong>
+				<div>
+				<form class="mui-form--inline" id="steps">	
+					<input value="1" type ="range" min="1" max="1" id="rangeslider" disabled="disabled" />		
+					<div>
+						<div>
+						<button type="button" id="button-back" class="mui-btn mui-btn--raised mui-btn--primary" title="Back to last toplevel event" disabled="disabled">&#9664;</button> 
+						</div><div>
+						<button type="button" id="button-back-step" class="mui-btn mui-btn--raised mui-btn--primary" title="Go one step back" disabled="disabled">&#9665;</button> 
+						</div><div id="rangeinfo">
+						&nbsp;<output id="rangevalue">1</output>&nbsp;/&nbsp;<span id="rangemax">1</span>&nbsp;
+						</div><div>
+						<button type="button" id="button-forward-step" class="mui-btn mui-btn--raised mui-btn--primary" title="Next step" disabled="disabled">&#9655;</button> 
+						</div><div>
+						<button type="button" id="button-forward" class="mui-btn mui-btn--raised mui-btn--primary" title="Go to next toplevel event" disabled="disabled">&#9654;</button> 
+						</div>
+					</div>
+				</form>
+				<div class="toggle mui-container-fluid">
+					<label>
+						Show input &amp; rest lists  
+						<input type="checkbox" id="toggleLists" disabled="disabled">
+						<span class="slider"></span>
+					</label>
+				</div>
+				</div>
+			</li>
+		</ul>
+	</div>
+<!-- Header -->
+	<header id="header">
+		<div class="mui-appbar mui--appbar-line-height mui--z1">
+			<div class="mui--pull-left">
+				<a class="controls-toggle mui--visible-xs-inline-block mui--visible-sm-inline-block js-show-controls" title="Toggle sidebar">☰</a>
+				<a class="controls-toggle mui--hidden-xs mui--hidden-sm js-hide-controls" title="Toggle sidebar">☰</a>
+				<span class="mui--text-title mui--visible-xs-inline-block">DCG Visualiser</span>
+			</div>
+			<div class="mui--pull-right">
+				<a class="controls-toggle" id="help" title="Help" onclick="activateOverlay('helpOverlay')">?</a>
+				<a class="controls-toggle" id="about" title="About" onclick="activateOverlay('aboutOverlay')">&#8230;</a>
+			</div>
+		</div>
+	</header>
+<!-- Main -->
+	<div id="main" class="mui--no-user-select">
+		<div class="mui-container-fluid disabled" id="resultPanel">
+			<div class="mui-panel mui--text-subhead" id="result">
+				<em>visualisation  -->  ['declare grammar rules'],  ['phrase query'], ['click find solution'].</em>
+			</div>
+		</div>
+		<div class="mui-container-fluid disabled" id="visualisationPanel">	
+			<div id="visualisation" class="hideLists"></div>
+		</div>
+		
+	</div>
+<!-- Footer -->
+	<footer id="footer" class="mui--z1">
+		<!--<div class="mui-container-fluid mui--text-light-hint">
+		</div>-->
+	</footer>
+<!-- Zoom -->
+	<div id="zoom">
+		<button class="mui-btn mui-btn--small mui-btn--primary mui-btn--fab mui--z2" id="zoomout" title="Zoom out" disabled="disabled">&minus;</button>
+		<button class="mui-btn mui-btn--small mui-btn--primary mui-btn--fab mui--z2" id="zoomin"  title="Zoom in" disabled="disabled">+</button>
+	</div>
+<!-- Help & About Overlay -->
+<div style="display:none">
+	<div id="helpOverlay" class="overlay mui--z3">
+		<div class="mui-panel mui--bg-primary">
+			<a onclick="mui.overlay('off')" class="mui--pull-right mui-btn mui-btn--small mui-btn--fab" title="Close">X</a>
+			<h2 class="mui--text-light">How to &#8230;</h2>
+		</div>
+		<div class="mui-panel">
+			<h4>&#8230; enter a DCG?</h4>
+			<p>	
+				To use the tool, a DCG must first be specified.
+				In addition of formulating a DCG by yourself, a grammar can be selected from existing examples and modified as desired.
+				<br>
+
+				<img src="img/help1.png" title="Loading a example DCG">
+				It is possible to utilise the following language components:
+				<ul>
+					<li>Rules in the Form <strong>Head --&gt; Body.</strong></li>
+					<li><strong>Head</strong> is a (non variable) Prolog term of arbitrary arity.</li>
+					<li>The following items are allowed as <strong>Body:</strong> 
+						<ul>
+							<li><strong>Non-terminals:</strong> Refers to the head of a DCG rule.</li>
+							<li><strong>Terminals:</strong> A list of arbitrary terms <em>[just, 1, Example]</em>. 
+								Variables can be used within lists. 
+								Lists of characters <em>[e, g]</em> can also be equivalently specified as strings <em>"eg"</em>.</li>
+							<li><strong>Prolog Code:</strong> Within curly brackets <em>{ &#8230; }</em>. Permitted is solely the use of built-in predicates. </li>
+							<li><strong>Building a sequence:</strong> Utilising the items above, seperated by commas.</li>
+						</ul>
+					</li>
+				</ul>
+			</p>
+		</div>
+		<div class="mui-panel">
+			<h4>&#8230; phrase a query?</h4>
+			<p>
+				A DCG can be queried as if utilising the ISO predicate <strong>phrase/3</strong>.
+				Required is the specification of the queried <strong>DCG body</strong>, an <strong>input</strong> and a <strong>rest list.</strong>
+				The usage of variables instead of (partially) instantiated lists is possible.
+			</p>
+			<img src="img/help2.png" title="Phrasing a query">
+			<p>
+				If the DCG is based on <strong>strings</strong>, these can be used instead of character lists, too. 
+				These are converted to lists of individual characters during execution.
+			</p>
+			<p>
+				An execution of a query is initiated with the button <strong>'First Solution'</strong>.
+				If the request was successful, further solutions can be retrieved via <strong>'Next Solution'</strong>.
+				When a solution is retrieved, the last step of its execution is displayed in the visualisation panel.
+			</p>
+		</div>
+		<div class="mui-panel">
+			<h4>&#8230; control the visualisation interactively?</h4>
+				<p>
+					The interactive navigation through execution steps is possible using the provided inputs in the menu <em>Controls</em>. 
+					The <strong>slider</strong> allows a quick selection of arbitrary execution steps. 
+				</p>
+				<img src="img/help3.png" title="Selection a execution step">
+				<p>
+					Underneath are <strong>buttons</strong> for stepping through the execution. 
+					There are buttons for single increments as well as buttons that jump directly to the next or last solution. 
+				</p>
+				<p>
+					If desired, <strong>input and rest lists</strong> can be displayed for each goal in the visualisation.
+				</p>
+
+				<p>
+					The displayed result can be <strong>zoomed</strong> with provided buttons. 
+					In addition, the visualisation can be <strong>panned</strong> by dragging with the mouse.
+				</p>
+				<p>
+					As soon as a form field is changed, the <strong>visualisation is disabled.</strong>
+					Otherwise the visualisation could be no longer in sync with the DCG and query.
+					Of course, a new query can be executed. Then, deactivated elements become active again.
+				</p>
+		</div>
+		<div class="mui-panel">
+			<h4>&#8230; understand the visualisation?</h4>
+			<p>The visualisation shows the execution by means of a parse tree extended by failing goals.</p>
+			<img src="img/help4.png" title="View of the execution">
+			<p>
+				Each called goal is presented as a box. 
+				The topmost box holds the queried grammar body. 
+				Multiple choices are below each other indicated by the corresponding lines. 
+				Sub goals are displayed directly next to each other. 
+				Event types are colour coded: 
+			</p>
+			<p>
+			<ul>
+				<li><strong data-port="unify">Unify</strong> The goal is called and unified with a clause but <strong>not yet finished.</strong> </li>
+				<li><strong data-port="exit">Exit</strong> The goal <strong>succeeded.</strong></li>
+				<li><strong data-port="fail">Fail</strong> The goal <strong>failed.</strong> If possible, backtracking is invoked. </li>
+				<li><strong data-port="depth">Depth</strong> The execution is aborted. The <strong>allowed recursion limit</strong> was exceeded. </li>
+				<li><strong data-port="inactive" class="backtracking">Inactive</strong> This goal was <strong>rejected through backtracking.</strong> </li>
+			</ul>
+			</p>
+			<p>
+				The current goal is highlighted with <strong>green text colour.</strong> 
+				If there is an associated rule, this is also marked in the editor. 
+				Hovering over goals also highlights corresponding rules.
+			</p>
+		</div>
+		
+
+	</div>
+	<div id="aboutOverlay" class="overlay mui--z3">
+		<div class="mui-panel mui--bg-primary">
+			<a onclick="mui.overlay('off')" class="mui--pull-right mui-btn mui-btn--small mui-btn--fab" title="Close">X</a>
+			<h2 class="mui--text-light">About DCG Visualiser</h2>
+		</div>
+		<div class="mui-panel">Created by Jona Kalkus as part of his master thesis at the University of W&uuml;rzburg in 2017.</div>
+		<div class="mui-panel">
+			<h4>Made possible through</h4>
+			<ul class="mui--text-body2">
+				<li><a href="http://www.swi-prolog.org/">SWI-Prolog</a></li>
+				<li><a href="http://pengines.swi-prolog.org/">Pengines</a></li>
+				<li><a href="https://www.muicss.com/">MUI</a></li>
+				<li><a href="https://jquery.com/">jQuery</a></li>
+				<li><a href="http://handlebarsjs.com/">Handlebars</a></li>
+				<li><a href="http://codemirror.net/">CodeMirror</a></li>
+				<li style="color:#f90">&hearts;</li>
+			</ul>
+		</div>
+		
+	</div>
+</div>
+<!-- Handlebars.js templates for rendering visualisation -->
+	<script type="text/template" id="goalTemplate">
+		<ul class="goal">
+		{{#each events}}
+		<li id="step-{{this.step}}" data-port="{{this.type}}" data-redo="{{redo}}" data-line="{{line}}">
+			{{!this.step}} {{{goals this.goal}}} {{!this.type}}
+		</li>
+		{{/each}}
+		</ul>
+		<ul class="choices">
+			{{#choices}}
+			<li>
+				{{>choice}}
+			</li>
+			{{/choices}}
+		</ul>
+	</script>
+	<script type="text/template" id="choiceTemplate">
+	{{!--#if subgoals--}}
+		<ul class="subgoals">
+			{{#subgoals}}
+			<li>
+				{{>goal}}
+			</li>
+			{{/subgoals}}
+		</ul>
+	{{!--/if--}}
+	</script>
+	<script type="text/template" id="queryTemplate">
+		<strong>DCGBody:</strong> {{{goals goal}}} &nbsp;&nbsp;
+		<strong>Port:</strong> {{type}} &nbsp;&nbsp;
+	</script>
+</body>
+</html>

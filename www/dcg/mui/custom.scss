@@ -1,0 +1,25 @@
+// import MUI colors
+@import "bower_components/mui/src/sass/mui/colors";
+
+// customize MUI variables
+$mui-primary-color:       mui-color('blue-grey', '700');
+$mui-primary-color-dark:  mui-color('blue-grey', '900');
+$mui-primary-color-light: mui-color('blue-grey', '200');
+
+$mui-accent-color:        mui-color('lime', '200');
+$mui-accent-color-dark:   mui-color('lime', '100');
+$mui-accent-color-light:  mui-color('lime', '400');
+
+$mui-base-font-size:      14px;
+$mui-input-font-size:     14px;
+//$mui-label-font-size:     11px;
+
+$mui-btn-height:          36px;
+$mui-btn-padding-horizontal: 18px;
+$mui-appbar-height:       48px;
+
+$mui-form-group-margin-bottom: 16px;
+
+
+// import MUI SASS
+@import "bower_components/mui/src/sass/mui";
