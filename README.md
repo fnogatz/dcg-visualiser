@@ -1,6 +1,6 @@
 # DCG Visualiser
 
-A web-based visualisation for Definite Clause Grammars
+A web-based visualisation for Definite Clause Grammars.
 
 ![Screenshot](screenshot.png)
 
