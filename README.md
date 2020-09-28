@@ -18,10 +18,8 @@ On first startup, Prolog will ask for a new admin name and password. The server 
 
 ## Access the application
 
-When the server is running, go to http://localhost:3030/ in a modern web browser. 
-Further hints on using the application can be found in the help `?` there.
+When the server is running, go to http://localhost:3030/ in a modern web browser. Further hints on using the application can be found in the help `?` there.
 
 ## Environment
 
 Developed and tested using SWI Prolog 7.6.0, Google Chrome 62 on Windows.
-
