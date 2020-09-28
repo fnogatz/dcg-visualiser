@@ -26,11 +26,6 @@
 
 :- use_module(dcg_term_expansion).
 
-% Custom If/Then/Else with called 'Else'-branch also on failed backtracking
-:- op(1150, xfy, ~>).
-Goal ~> Then ; _Else :- Goal, Then.
-_Goal ~> _Then ; Else :- !, Else.
-
 /*
 	%%%%%%%%%%%%%%%%%%%
 	Exported Predicates
@@ -126,7 +121,7 @@ phrase_mi_nth(Module:DCGBody, Input, Rest, Nth, Dict) :-
 mi(Module:Expanded) :-
 	% initalisation
 	save_step(unify, N, 1, 0, -1, 1, Expanded, 'DCGBody', Module),
-	(mi(Expanded, 1:N:1:Module) ~>
+	(mi(Expanded, 1:N:1:Module),
 		save_step(exit, _, _, 0, -1, 1, Expanded, 'DCGBody', Module)
 	;
 		save_step(fail, _, _, 0, -1, 1, Expanded, 'DCGBody', Module),
@@ -143,7 +138,7 @@ mi(A, L:Par:Pos:Module) :-
 	functor(A, F, 3),
 	(F = 'T' ; F = 'P'),
 	save_step(unify, _, _, L, Par, Pos, A, F, Module),
-	(call(A) ~>
+	(call(A),
 	% result
 		save_step(exit, _, _, L, Par, Pos, A, F, Module)
 	;
@@ -157,7 +152,7 @@ mi(A, L:Par:Pos:Module) :-
 	clause(Module:A, B, ClauseRef),
 	save_step(unify, N0, _, L, Par, Pos, A, ClauseRef, Module),
 	L1 is L + 1,
-	(mi(B, L1:N0:1:Module) ~>
+	(mi(B, L1:N0:1:Module),
 	% result
 		save_step(exit, _, _, L, Par, Pos, A, ClauseRef, Module)
 	;
