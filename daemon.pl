@@ -40,8 +40,8 @@ make this work:
 %	Limit the memory usage of the pengine server (to 8Gb).
 
 memlimit :-
-   catch(rlimit(as, _, 8 000 000 000), E,
-	 print_message(warning, E)).
+  catch(rlimit(as, _, 8 000 000 000), E,
+  print_message(warning, E)).
 
 :- initialization memlimit.
 :- initialization load_settings('pengines.conf').

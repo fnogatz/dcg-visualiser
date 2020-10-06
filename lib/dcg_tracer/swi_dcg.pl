@@ -1,8 +1,8 @@
 /*
-	This Module is a modified version of SWI module '$dcg'.
-	
-	Optimisations and caching are disabled. 
-	Is used by dcg_term_expansion to expand grammar bodies. 
+  This Module is a modified version of SWI module '$dcg'.
+  
+  Optimisations and caching are disabled. 
+  Is used by dcg_term_expansion to expand grammar bodies. 
 */
 /*  Part of SWI-Prolog
 
@@ -62,35 +62,35 @@ resulting code is simply the same), I've removed that.
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 /*
-	DCG Term Expansion
-	Modified DCG Expansion
-	
-	dcg_translate_rule_/2
-	'$dcg':dcg_translate_rule/2 without optimisation
-	Original can be found here:
-	http://www.swi-prolog.org/pldoc/doc/_SWI_/boot/dcg.pl?show=src#dcg_translate_rule/2
+  DCG Term Expansion
+  Modified DCG Expansion
+  
+  dcg_translate_rule_/2
+  '$dcg':dcg_translate_rule/2 without optimisation
+  Original can be found here:
+  http://www.swi-prolog.org/pldoc/doc/_SWI_/boot/dcg.pl?show=src#dcg_translate_rule/2
 */
 dcg_translate_rule_(Rule, Clause) :-
-	dcg_translate_rule_(Rule, _, Clause, _).
+  dcg_translate_rule_(Rule, _, Clause, _).
 dcg_translate_rule_(((LP,MNT)-->RP), Pos0, (H:-B), Pos) :-
-	!,
-	swi_dcg:f2_pos(Pos0, PosH0, PosRP0, Pos, PosH, PosRP),
-	swi_dcg:f2_pos(PosH0, PosLP0, PosMNT0, PosH, PosLP, PosMNT),
-	'$current_source_module'(M),
-	Qualify = q(M,M,_),
-	dcg_extend_(LP, PosLP0, S0, SR, H, PosLP),
-	dcg_body_(RP, PosRP0, Qualify, S0, S1, B0, PosRP),
-	dcg_body_(MNT, PosMNT0, Qualify, SR, S1, B1, PosMNT),
-	B = (B0, B1).
-	%dcg_optimise((B0,B1),B2,S0),
-	%dcg_optimise(B2,B,SR).
+  !,
+  swi_dcg:f2_pos(Pos0, PosH0, PosRP0, Pos, PosH, PosRP),
+  swi_dcg:f2_pos(PosH0, PosLP0, PosMNT0, PosH, PosLP, PosMNT),
+  '$current_source_module'(M),
+  Qualify = q(M,M,_),
+  dcg_extend_(LP, PosLP0, S0, SR, H, PosLP),
+  dcg_body_(RP, PosRP0, Qualify, S0, S1, B0, PosRP),
+  dcg_body_(MNT, PosMNT0, Qualify, SR, S1, B1, PosMNT),
+  B = (B0, B1).
+  %dcg_optimise((B0,B1),B2,S0),
+  %dcg_optimise(B2,B,SR).
 dcg_translate_rule_((LP-->RP), Pos0, (H:-B), Pos) :-
-	swi_dcg:f2_pos(Pos0, PosLP0, PosRP0, Pos, PosLP, PosRP),
-	dcg_extend_(LP, PosLP0, S0, S, H, PosLP),
-	'$current_source_module'(M),
-	Qualify = q(M,M,_),
-	dcg_body_(RP, PosRP0, Qualify, S0, S, B, PosRP).
-	%dcg_optimise(B0,B,S0).
+  swi_dcg:f2_pos(Pos0, PosLP0, PosRP0, Pos, PosLP, PosRP),
+  dcg_extend_(LP, PosLP0, S0, S, H, PosLP),
+  '$current_source_module'(M),
+  Qualify = q(M,M,_),
+  dcg_body_(RP, PosRP0, Qualify, S0, S, B, PosRP).
+  %dcg_optimise(B0,B,S0).
 
 %!  dcg_optimise(+BodyIn, -Body, +S0) is det.
 %
@@ -120,84 +120,84 @@ dcg_optimise(B, B, _).
 %   Translate DCG body term.
 
 /*
-	dcg_body_/7
-	
-	'$dcg':dcg_body/7 without caching
-	http://www.swi-prolog.org/pldoc/doc/_SWI_/boot/dcg.pl?show=src#dcg_body/7
+  dcg_body_/7
+  
+  '$dcg':dcg_body/7 without caching
+  http://www.swi-prolog.org/pldoc/doc/_SWI_/boot/dcg.pl?show=src#dcg_body/7
 */
 dcg_body_(Var, P0, Q, S, SR, phrase(QVar, S, SR), P) :-
-    var(Var),
-    !,
-    swi_dcg:qualify(Q, Var, P0, QVar, P).
+  var(Var),
+  !,
+  swi_dcg:qualify(Q, Var, P0, QVar, P).
 dcg_body_(M:X, Pos0, q(_,C,_), S, SR, Ct, Pos) :-
-    !,
-    swi_dcg:f2_pos(Pos0, _, XP0, _, _, _),
-    dcg_body_(X, XP0, q(M,C,Pos0), S, SR, Ct, Pos).
+  !,
+  swi_dcg:f2_pos(Pos0, _, XP0, _, _, _),
+  dcg_body_(X, XP0, q(M,C,Pos0), S, SR, Ct, Pos).
 dcg_body_([], P0, _, S, SR, S=SR, P) :-         % Terminals
-    !,
-    swi_dcg:dcg_terminal_pos(P0, P).
+  !,
+  swi_dcg:dcg_terminal_pos(P0, P).
 dcg_body_(List, P0, _, S, SR, C, P) :-
-    (   List = [_|_]
-    ->  !,
-        (   is_list(List)
-        ->  '$append'(List, SR, OL),        % open the list
-            C = (S = OL)
-        ;   '$skip_list'(_, List, Tail),
-            var(Tail)
-        ->  C = '$append'(List, SR, S)      % TBD: Can be optimized
-        ;   '$type_error'(list_or_partial_list, List)
-        )
-    ;   string(List)                        % double_quotes = string
-    ->  !,
-        string_codes(List, Codes),
-        '$append'(Codes, SR, OL),
-        C = (S = OL)
-    ),
-    swi_dcg:dcg_terminal_pos(P0, P).
+  (   List = [_|_]
+  ->  !,
+      (   is_list(List)
+      ->  '$append'(List, SR, OL),        % open the list
+          C = (S = OL)
+      ;   '$skip_list'(_, List, Tail),
+          var(Tail)
+      ->  C = '$append'(List, SR, S)      % TBD: Can be optimized
+      ;   '$type_error'(list_or_partial_list, List)
+      )
+  ;   string(List)                        % double_quotes = string
+  ->  !,
+      string_codes(List, Codes),
+      '$append'(Codes, SR, OL),
+      C = (S = OL)
+  ),
+  swi_dcg:dcg_terminal_pos(P0, P).
 dcg_body_(!, P0, _, S, SR, (!, SR = S), P) :-
-    !,
-    swi_dcg:dcg_cut_pos(P0, P).
+  !,
+  swi_dcg:dcg_cut_pos(P0, P).
 dcg_body_({}, P, _, S, S, true, P) :- !.
 dcg_body_({T}, P0, Q, S, SR, (QT, SR = S), P) :-
-    !,
-    swi_dcg:dcg_bt_pos(P0, P1),
-    swi_dcg:qualify(Q, T, P1, QT, P).
+  !,
+  swi_dcg:dcg_bt_pos(P0, P1),
+  swi_dcg:qualify(Q, T, P1, QT, P).
 dcg_body_((T,R), P0, Q, S, SR, (Tt, Rt), P) :-
-    !,
-    swi_dcg:f2_pos(P0, PA0, PB0, P, PA, PB),
-    dcg_body_(T, PA0, Q, S, SR1, Tt, PA),
-    dcg_body_(R, PB0, Q, SR1, SR, Rt, PB).
+  !,
+  swi_dcg:f2_pos(P0, PA0, PB0, P, PA, PB),
+  dcg_body_(T, PA0, Q, S, SR1, Tt, PA),
+  dcg_body_(R, PB0, Q, SR1, SR, Rt, PB).
 dcg_body_((T;R), P0, Q, S, SR, (Tt;Rt), P) :-
-    !,
-    swi_dcg:f2_pos(P0, PA0, PB0, P, PA, PB),
-    dcg_body_(T, PA0, Q, S, S1, T1, PA), swi_dcg:or_delay_bind(S, SR, S1, T1, Tt),
-    dcg_body_(R, PB0, Q, S, S2, R1, PB), swi_dcg:or_delay_bind(S, SR, S2, R1, Rt).
+  !,
+  swi_dcg:f2_pos(P0, PA0, PB0, P, PA, PB),
+  dcg_body_(T, PA0, Q, S, S1, T1, PA), swi_dcg:or_delay_bind(S, SR, S1, T1, Tt),
+  dcg_body_(R, PB0, Q, S, S2, R1, PB), swi_dcg:or_delay_bind(S, SR, S2, R1, Rt).
 dcg_body_((T|R), P0, Q, S, SR, (Tt;Rt), P) :-
-    !,
-    swi_dcg:f2_pos(P0, PA0, PB0, P, PA, PB),
-    dcg_body_(T, PA0, Q, S, S1, T1, PA), swi_dcg:or_delay_bind(S, SR, S1, T1, Tt),
-    dcg_body_(R, PB0, Q, S, S2, R1, PB), swi_dcg:or_delay_bind(S, SR, S2, R1, Rt).
+  !,
+  swi_dcg:f2_pos(P0, PA0, PB0, P, PA, PB),
+  dcg_body_(T, PA0, Q, S, S1, T1, PA), swi_dcg:or_delay_bind(S, SR, S1, T1, Tt),
+  dcg_body_(R, PB0, Q, S, S2, R1, PB), swi_dcg:or_delay_bind(S, SR, S2, R1, Rt).
 dcg_body_((C->T), P0, Q, S, SR, (Ct->Tt), P) :-
-    !,
-    swi_dcg:f2_pos(P0, PA0, PB0, P, PA, PB),
-    dcg_body_(C, PA0, Q, S, SR1, Ct, PA),
-    dcg_body_(T, PB0, Q, SR1, SR, Tt, PB).
+  !,
+  swi_dcg:f2_pos(P0, PA0, PB0, P, PA, PB),
+  dcg_body_(C, PA0, Q, S, SR1, Ct, PA),
+  dcg_body_(T, PB0, Q, SR1, SR, Tt, PB).
 dcg_body_((C*->T), P0, Q, S, SR, (Ct*->Tt), P) :-
-    !,
-    swi_dcg:f2_pos(P0, PA0, PB0, P, PA, PB),
-    dcg_body_(C, PA0, Q, S, SR1, Ct, PA),
-    dcg_body_(T, PB0, Q, SR1, SR, Tt, PB).
+  !,
+  swi_dcg:f2_pos(P0, PA0, PB0, P, PA, PB),
+  dcg_body_(C, PA0, Q, S, SR1, Ct, PA),
+  dcg_body_(T, PB0, Q, SR1, SR, Tt, PB).
 dcg_body_((\+ C), P0, Q, S, SR, (\+ Ct, SR = S), P) :-
-    !,
-    swi_dcg:f1_pos(P0, PA0, P, PA),
-    dcg_body_(C, PA0, Q, S, _, Ct, PA).
+  !,
+  swi_dcg:f1_pos(P0, PA0, P, PA),
+  dcg_body_(C, PA0, Q, S, _, Ct, PA).
 dcg_body_(T, P0, Q, S, SR, QTt, P) :-
-    dcg_extend_(T, P0, S, SR, Tt, P1),
-    swi_dcg:qualify(Q, Tt, P1, QTt, P).
+  dcg_extend_(T, P0, S, SR, Tt, P1),
+  swi_dcg:qualify(Q, Tt, P1, QTt, P).
 
 or_delay_bind(S, SR, S1, T, (T, SR=S)) :-
-    S1 == S,
-    !.
+  S1 == S,
+  !.
 or_delay_bind(_S, SR, SR, T, T).
 
 %!  qualify(+QualifyInfo, +Goal, +Pos0, -QGoal, -Pos) is det.
@@ -207,12 +207,12 @@ or_delay_bind(_S, SR, SR, T, T).
 %   current source module.
 
 qualify(q(M,C,_), X0, Pos0, X, Pos) :-
-    M == C,
-    !,
-    X = X0,
-    Pos = Pos0.
+  M == C,
+  !,
+  X = X0,
+  Pos = Pos0.
 qualify(q(M,_,MP), X, Pos0, M:X, Pos) :-
-    dcg_qualify_pos(Pos0, MP, Pos).
+  dcg_qualify_pos(Pos0, MP, Pos).
 
 
 %!  dcg_extend(+Head, +Extra1, +Extra2, -NewHead)
@@ -246,61 +246,61 @@ dcg_no_extend((_-->_)).
 %   end of the Rule.
 
 /*
-	'$dcg':dcg_extend/6 without caching
-	
-	Original: http://www.swi-prolog.org/pldoc/doc/_SWI_/boot/dcg.pl?show=src#dcg_extend/4
-	
-	The built-in caching stores extended bodies in 'dcg_extend_cache/4' facts. 
-	Was disabled since it caused the expansion inside dcg_tracer:phrase_mi/4 to behave faulty. 
+  '$dcg':dcg_extend/6 without caching
+  
+  Original: http://www.swi-prolog.org/pldoc/doc/_SWI_/boot/dcg.pl?show=src#dcg_extend/4
+  
+  The built-in caching stores extended bodies in 'dcg_extend_cache/4' facts. 
+  Was disabled since it caused the expansion inside dcg_tracer:phrase_mi/4 to behave faulty. 
 */
 dcg_extend_(V, _, _, _, _, _) :-
-	var(V),
-	!,
-	throw(error(instantiation_error,_)).
+  var(V),
+  !,
+  throw(error(instantiation_error,_)).
 dcg_extend_(M:OldT, Pos0, A1, A2, M:NewT, Pos) :-
-	!,
-	swi_dcg:f2_pos(Pos0, MPos, P0, Pos, MPos, P),
-	dcg_extend_(OldT, P0, A1, A2, NewT, P).
+  !,
+  swi_dcg:f2_pos(Pos0, MPos, P0, Pos, MPos, P),
+  dcg_extend_(OldT, P0, A1, A2, NewT, P).
 %dcg_extend(OldT, P0, A1, A2, NewT, P) :-
 %    dcg_extend_cache(OldT, A1, A2, NewT),
 %    !,
 %    extended_pos(P0, P).
 dcg_extend_(OldT, P0, A1, A2, NewT, P) :-
-	(   callable(OldT)
-	->  true
-	;   throw(error(type_error(callable,OldT),_))
-	),
-	(   swi_dcg:dcg_no_extend(OldT)
-	->  throw(error(permission_error(define,dcg_nonterminal,OldT),_))
-	;   true
-	),
-	(   compound(OldT)
-	->  compound_name_arity(OldT, Name, Arity),
-		compound_name_arity(CopT, Name, Arity)
-	;   CopT = OldT,
-		Name = OldT,
-		Arity = 0
-	),
-	NewArity is Arity+2,
-	functor(NewT, Name, NewArity),
-	swi_dcg:copy_args(1, Arity, CopT, NewT),
-	A1Pos is Arity+1,
-	A2Pos is Arity+2,
-	arg(A1Pos, NewT, A1C),
-	arg(A2Pos, NewT, A2C),
-	%assert(dcg_extend_cache(CopT, A1C, A2C, NewT)),
-	OldT = CopT,
-	A1C = A1,
-	A2C = A2,
-	swi_dcg:extended_pos(P0, P).
+  (   callable(OldT)
+  ->  true
+  ;   throw(error(type_error(callable,OldT),_))
+  ),
+  (   swi_dcg:dcg_no_extend(OldT)
+  ->  throw(error(permission_error(define,dcg_nonterminal,OldT),_))
+  ;   true
+  ),
+  (   compound(OldT)
+  ->  compound_name_arity(OldT, Name, Arity),
+    compound_name_arity(CopT, Name, Arity)
+  ;   CopT = OldT,
+    Name = OldT,
+    Arity = 0
+  ),
+  NewArity is Arity+2,
+  functor(NewT, Name, NewArity),
+  swi_dcg:copy_args(1, Arity, CopT, NewT),
+  A1Pos is Arity+1,
+  A2Pos is Arity+2,
+  arg(A1Pos, NewT, A1C),
+  arg(A2Pos, NewT, A2C),
+  %assert(dcg_extend_cache(CopT, A1C, A2C, NewT)),
+  OldT = CopT,
+  A1C = A1,
+  A2C = A2,
+  swi_dcg:extended_pos(P0, P).
 
 copy_args(I, Arity, Old, New) :-
-    I =< Arity,
-    !,
-    arg(I, Old, A),
-    arg(I, New, A),
-    I2 is I + 1,
-    copy_args(I2, Arity, Old, New).
+  I =< Arity,
+  !,
+  arg(I, Old, A),
+  arg(I, New, A),
+  I2 is I + 1,
+  copy_args(I2, Arity, Old, New).
 copy_args(_, _, _, _).
 
 
@@ -309,7 +309,7 @@ copy_args(_, _, _, _).
                  *******************************/
 
 extended_pos(Pos0, Pos) :-
-    '$expand':extended_pos(Pos0, 2, Pos).
+  '$expand':extended_pos(Pos0, 2, Pos).
 f2_pos(Pos0, A0, B0, Pos, A, B) :- '$expand':f2_pos(Pos0, A0, B0, Pos, A, B).
 f1_pos(Pos0, A0, Pos, A) :- '$expand':f1_pos(Pos0, A0, Pos, A).
 
@@ -318,48 +318,48 @@ f1_pos(Pos0, A0, Pos, A) :- '$expand':f1_pos(Pos0, A0, Pos, A).
 %   Position transformation for mapping of {G} to (G, S=SR).
 
 dcg_bt_pos(Var, Var) :-
-    var(Var),
-    !.
+  var(Var),
+  !.
 dcg_bt_pos(brace_term_position(F,T,P0),
-           term_position(F,T,F,F,
-                         [ P0,
-                           term_position(T,T,T,T,_)
-                         ])) :- !.
+   term_position(F,T,F,F,
+                 [ P0,
+                   term_position(T,T,T,T,_)
+                 ])) :- !.
 dcg_bt_pos(Pos, _) :-
-    expected_layout(brace_term, Pos).
+  expected_layout(brace_term, Pos).
 
 dcg_cut_pos(Var, Var) :-
-    var(Var),
-    !.
+  var(Var),
+  !.
 dcg_cut_pos(F-T, term_position(F,T,F,T,
-                               [ F-T,
-                                 term_position(T,T,T,T,_)
-                               ])).
+  [ F-T,
+    term_position(T,T,T,T,_)
+  ])).
 dcg_cut_pos(Pos, _) :-
-    expected_layout(atomic, Pos).
+  expected_layout(atomic, Pos).
 
 %!  dcg_terminal_pos(+ListPos, -TermPos)
 
 dcg_terminal_pos(Pos, _) :-
-    var(Pos),
-    !.
+  var(Pos),
+  !.
 dcg_terminal_pos(list_position(F,T,_Elms,_Tail),
                  term_position(F,T,_,_,_)).
 dcg_terminal_pos(F-T,
                  term_position(F,T,_,_,_)).
 dcg_terminal_pos(Pos, _) :-
-    expected_layout(terminal, Pos).
+  expected_layout(terminal, Pos).
 
 %!  dcg_qualify_pos(?TermPos0, ?ModuleCreatingPos, -TermPos)
 
 dcg_qualify_pos(Var, _, _) :-
-    var(Var),
-    !.
+  var(Var),
+  !.
 dcg_qualify_pos(Pos,
-                term_position(F,T,FF,FT,[MP,_]),
-                term_position(F,T,FF,FT,[MP,Pos])) :- !.
+  term_position(F,T,FF,FT,[MP,_]),
+  term_position(F,T,FF,FT,[MP,Pos])) :- !.
 dcg_qualify_pos(_, Pos, _) :-
-    expected_layout(f2, Pos).
+  expected_layout(f2, Pos).
 
 expected_layout(Expected, Found) :-
-    '$expand':expected_layout(Expected, Found).
+  '$expand':expected_layout(Expected, Found).

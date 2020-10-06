@@ -24,43 +24,39 @@
 :- setting(storage_dir, atom, storage, 'The directory for storing files.').
 
 user:file_search_path(storage, Dir) :-
-	setting(storage_dir, Dir).
+  setting(storage_dir, Dir).
 user:file_search_path(storage, 'apps/swish/examples').
 user:file_search_path(storage, 'apps/scratchpad/examples').
-
 
 :- http_handler(root(storage), serve_files_in_directory(storage), [prefix]).
 :- http_handler(root(storage/store), store, []).
 :- http_handler(root(storage/update), update, []).
 
-
 store(Request) :-
-    http_parameters(Request,
-        [   program(Program, []),
-            type(Type, [default(pl)])
-        ]),
-	setting(storage_dir, Dir),
-    uuid(Base),
-    make_directory_path(Dir),
-    file_name_extension(Base, Type, File),
-    directory_file_path(Dir, File, RelPath),
-    http_current_host(Request, Hostname, Port, []),
-    parse_url(URL, [
-        protocol(http),
-        host(Hostname),
-        port(Port)
-    ]),
-    setup_call_cleanup(open(RelPath, write, S), write(S, Program), close(S)),
-    reply_json(json([url=URL, file=File]), [width(0)]).
-
-
+  http_parameters(Request, [
+    program(Program, []),
+    type(Type, [default(pl)])
+  ]),
+  setting(storage_dir, Dir),
+  uuid(Base),
+  make_directory_path(Dir),
+  file_name_extension(Base, Type, File),
+  directory_file_path(Dir, File, RelPath),
+  http_current_host(Request, Hostname, Port, []),
+  parse_url(URL, [
+    protocol(http),
+    host(Hostname),
+    port(Port)
+  ]),
+  setup_call_cleanup(open(RelPath, write, S), write(S, Program), close(S)),
+  reply_json(json([url=URL, file=File]), [width(0)]).
 
 update(Request) :-
-    http_parameters(Request,
-        [   file(File, []),
-	    program(Program, [])
-        ]),
-	setting(storage_dir, Dir),
-    directory_file_path(Dir, File, RelPath),
-    setup_call_cleanup(open(RelPath, write, S), write(S, Program), close(S)),
-    reply_json(json({ok:true}), [width(0)]).
+  http_parameters(Request, [
+    file(File, []),
+    program(Program, [])
+  ]),
+  setting(storage_dir, Dir),
+  directory_file_path(Dir, File, RelPath),
+  setup_call_cleanup(open(RelPath, write, S), write(S, Program), close(S)),
+  reply_json(json({ ok: true }), [width(0)]).
